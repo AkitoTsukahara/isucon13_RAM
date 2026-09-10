@@ -2,11 +2,18 @@ FROM node:20.9.0-bullseye-slim
 
 WORKDIR /tmp
 ENV DEBIAN_FRONTEND=noninteractive
+# bullseye is EOL: deb.debian.org no longer serves its packages and the Release
+# files are expired, so use the snapshot repositories pinned to the base image.
+RUN echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid-until && \
+    sed -i \
+      -e 's|^deb http://deb.debian.org|# deb http://deb.debian.org|' \
+      -e 's|^# deb http://snapshot.debian.org|deb http://snapshot.debian.org|' \
+      /etc/apt/sources.list
 RUN apt-get update && \
     apt-get -y upgrade && \
     apt-get install -y curl wget gcc g++ make sqlite3 locales locales-all && \
-    wget -q https://dev.mysql.com/get/mysql-apt-config_0.8.29-1_all.deb && \
-    apt-get -y install ./mysql-apt-config_0.8.29-1_all.deb && \
+    wget -q https://dev.mysql.com/get/mysql-apt-config_0.8.35-1_all.deb && \
+    apt-get -y install ./mysql-apt-config_0.8.35-1_all.deb && \
     apt-get -y update && \
     apt-get -y install default-mysql-client pdns-server pdns-backend-mysql
 
